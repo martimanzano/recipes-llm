@@ -12,7 +12,7 @@ class LLM:
     def __init__(self) -> None:
         pass
     
-    def build_prompt(system_prompt, examples, inst_prompt, images_encoded):
+    def build_prompt(system_prompt, examples, inst_prompt):
         pass
     
     def generate_stream_response(self, prompt, temperature, max_new_tokens, additional_sampling_parameters) -> str:
@@ -20,7 +20,6 @@ class LLM:
 
     def generate_structured_response(self, prompt, temperature, max_new_tokens, additional_sampling_parameters) -> str:
         pass
-
     
     def clean_tokens(self, token):        
         return token.replace("\n", "  \n").replace("```json", "").replace("```", "")

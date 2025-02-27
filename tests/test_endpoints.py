@@ -2,6 +2,7 @@
 import uuid
 from fastapi.testclient import TestClient
 from app.main import app
+from app.schemas.schema_recipes import RecipeList
 
 client = TestClient(app)
 
@@ -95,15 +96,15 @@ def test_list_ingredients():
     for ing in ingredients:
         assert ing["ingredient"] in ingredient_names
 
-def test_recipes():
+def test_create_recipes_with_disliked_ingredients():
     user_id = 11
     # Create several ingredients for the same user.
     ingredients = ["tomato", "cheese", "onion"]
-    extra_ingredient = unique_ingredient("lettuce")
+    
     ingredients_preferences = [
         {"user_id": user_id, "ingredient": unique_ingredient(ingredients[0]), "preference": "liked"},
-        {"user_id": user_id, "ingredient": unique_ingredient(ingredients[1]), "preference": "disliked"},
-        {"user_id": user_id, "ingredient": extra_ingredient, "preference": "disliked"},
+        {"user_id": user_id, "ingredient": unique_ingredient(ingredients[1]), "preference": "liked"},
+        {"user_id": user_id, "ingredient": unique_ingredient(ingredients[2]), "preference": "disliked"}
     ]
 
     client.post("/ingredients/", json=ingredients_preferences[0])
@@ -111,10 +112,24 @@ def test_recipes():
     client.post("/ingredients/", json=ingredients_preferences[2])
     
     response = client.get("/recipes/", params={"user_id": user_id, "ingredients": ingredients})
-    assert response.status_code == 200, response.text
-    assert response.json() == {
-        "tomato": "liked",
-        "cheese": "disliked",
-        "onion": "no preference"
-    }
-    print(response.json())
+    assert response.status_code == 400, response.json()
+    assert "disliked ingredients" in str(response.json()["detail"]).lower()
+
+def test_create_recipes_with_insufficient_ingredients():
+    user_id = 11
+    ingredients = ["salt", "oil", "sugar"]
+
+    response = client.get("/recipes/", params={"user_id": user_id, "ingredients": ingredients})
+    assert response.status_code == 400, response.json()
+    assert "no recipes found" in str(response.json()["detail"]).lower()
+  
+def test_create_recipes():
+    user_id = 13
+    ingredients = ["tomato", "cheese", "onion", "salt", "pepper", "chicken", "garlic", "oil", "rice", "paprika", "curry"]
+    
+    response = client.get("/recipes/", params={"user_id": user_id, "ingredients": ingredients})
+        
+    assert response is not None
+    recipe_list_obj = RecipeList.model_validate(response.json())
+    assert recipe_list_obj
+    assert len(recipe_list_obj.root) > 0

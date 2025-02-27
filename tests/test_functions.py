@@ -14,6 +14,7 @@ from app.crud.ingredient_preferences_crud import (
     list_ingredients,
 )
 from app.schemas.schema_ingredients import IngredientPreferenceCreate, IngredientPreferenceUpdate, PreferenceEnum
+from app.schemas.schema_recipes import RecipeList
 
 def unique_ingredient(base: str) -> str:
     """Generate a unique ingredient name to avoid collisions between tests."""
@@ -127,7 +128,7 @@ def test_list_ingredients(db_session: Session):
     for data in ingredients_data:
         assert data["ingredient"] in returned_ingredients
 
-def test_get_user_preferences(db_session: Session):
+def test_create_recipes_with_disliked_ingredients(db_session: Session):
     user_id = 1
     ingredients = ["tomato", "cheese", "onion"]
 
@@ -135,12 +136,26 @@ def test_get_user_preferences(db_session: Session):
     create_ingredient(db_session, IngredientPreferenceCreate(user_id=user_id, ingredient="tomato", preference="liked"))
     create_ingredient(db_session, IngredientPreferenceCreate(user_id=user_id, ingredient="onion", preference="disliked"))
 
-    # Call the function directly
-    result = create_recipes(user_id, ingredients, db_session)
-    print(result)
+    with pytest.raises(HTTPException) as exc_info:
+        result = create_recipes(user_id, ingredients, db_session)
+    # Verify that the error message indicates a contradictory preference.
+    assert "disliked ingredients" in str(exc_info.value).lower()
 
-    assert result == {
-        "tomato": "liked",
-        "cheese": "no preference",
-        "onion": "disliked"
-    }
+def test_create_recipes_with_insufficient_ingredients(db_session: Session):
+    user_id = 1
+    ingredients = ["salt", "oil", "sugar"]
+  
+    with pytest.raises(HTTPException) as exc_info:
+        result = create_recipes(user_id, ingredients, db_session)
+    # Verify that the error message indicates a contradictory preference.
+    assert "no recipes found" in str(exc_info.value).lower()
+
+def test_create_recipes(db_session: Session):
+    user_id = 13
+    ingredients = ["tomato", "cheese", "onion", "salt", "pepper", "chicken", "garlic", "oil", "rice", "paprika", "curry"]
+    
+    result = create_recipes(user_id, ingredients, db_session)
+        
+    assert result is not None
+    assert isinstance(result, RecipeList)
+    assert len(result.root) > 0

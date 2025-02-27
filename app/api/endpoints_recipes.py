@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.database.database import get_db
@@ -13,9 +13,6 @@ from app.models.models_ingredients import IngredientPreference, PreferenceEnum
 router = APIRouter()
 logger = logging.getLogger("recipes")
 logger.setLevel(logging.INFO)
-
-class IngredientList(BaseModel):
-    names: list = []
 
 @router.get("/", response_model=schemas_recipes.RecipeList)
 def create_recipes(
@@ -31,6 +28,7 @@ def create_recipes(
     # Create a mapping of ingredient -> preference
     preference_map = {p.ingredient: p.preference.value for p in preferences}
     if PreferenceEnum.disliked in preference_map.values():
+        logger.warning(f"Tried to generate recipes for user {user_id} with disliked ingredients")
         raise HTTPException(status_code=400, detail="Cannot generate recipes with disliked ingredients")
     # Add "no preference" for ingredients that were not found
     result = {ingredient: preference_map.get(ingredient, "no preference") for ingredient in ingredients}
@@ -40,4 +38,9 @@ def create_recipes(
     structured_llm_response = llm.generate_structured_response(formatted_prompt, schemas_recipes.RecipeList, 0.6, 4096)
     recipe_list_obj = schemas_recipes.RecipeList.model_validate(structured_llm_response)
     
+    if not any(recipe_list_obj.root):
+        logger.warning(f"No recipes generated for user {user_id} with ingredients {ingredients}")
+        raise HTTPException(status_code=400, detail="No recipes found for the given ingredients. Please try again with different ingredients.")
+    
+    logger.info(f"Recipes generated for user {user_id} with ingredients {ingredients}")
     return recipe_list_obj
