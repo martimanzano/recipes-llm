@@ -94,3 +94,27 @@ def test_list_ingredients():
     ingredient_names = [item["ingredient"] for item in data]
     for ing in ingredients:
         assert ing["ingredient"] in ingredient_names
+
+def test_recipes():
+    user_id = 11
+    # Create several ingredients for the same user.
+    ingredients = ["tomato", "cheese", "onion"]
+    extra_ingredient = unique_ingredient("lettuce")
+    ingredients_preferences = [
+        {"user_id": user_id, "ingredient": unique_ingredient(ingredients[0]), "preference": "liked"},
+        {"user_id": user_id, "ingredient": unique_ingredient(ingredients[1]), "preference": "disliked"},
+        {"user_id": user_id, "ingredient": extra_ingredient, "preference": "disliked"},
+    ]
+
+    client.post("/ingredients/", json=ingredients_preferences[0])
+    client.post("/ingredients/", json=ingredients_preferences[1])
+    client.post("/ingredients/", json=ingredients_preferences[2])
+    
+    response = client.get("/recipes/", params={"user_id": user_id, "ingredients": ingredients})
+    assert response.status_code == 200, response.text
+    assert response.json() == {
+        "tomato": "liked",
+        "cheese": "disliked",
+        "onion": "no preference"
+    }
+    print(response.json())

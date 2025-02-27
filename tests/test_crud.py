@@ -3,17 +3,17 @@ import uuid
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.utils.exceptions import ContradictoryPreferenceError
+from app.api.endpoints_recipes import create_recipes
 
-from app.database import SessionLocal
-from app.ingredient_preferences_crud import (
+from app.database.database import SessionLocal
+from app.crud.ingredient_preferences_crud import (
     create_ingredient,
     get_ingredient,
     update_ingredient,
     delete_ingredient,
     list_ingredients,
 )
-from app.pydantic_schema import IngredientPreferenceCreate, IngredientPreferenceUpdate, PreferenceEnum
+from app.schemas.schema_ingredients import IngredientPreferenceCreate, IngredientPreferenceUpdate, PreferenceEnum
 
 def unique_ingredient(base: str) -> str:
     """Generate a unique ingredient name to avoid collisions between tests."""
@@ -126,3 +126,21 @@ def test_list_ingredients(db_session: Session):
     returned_ingredients = {record.ingredient for record in records}
     for data in ingredients_data:
         assert data["ingredient"] in returned_ingredients
+
+def test_get_user_preferences(db_session: Session):
+    user_id = 1
+    ingredients = ["tomato", "cheese", "onion"]
+
+    # Create some preferences in the DB
+    create_ingredient(db_session, IngredientPreferenceCreate(user_id=user_id, ingredient="tomato", preference="liked"))
+    create_ingredient(db_session, IngredientPreferenceCreate(user_id=user_id, ingredient="onion", preference="disliked"))
+
+    # Call the function directly
+    result = create_recipes(user_id, ingredients, db_session)
+    print(result)
+
+    assert result == {
+        "tomato": "liked",
+        "cheese": "no preference",
+        "onion": "disliked"
+    }

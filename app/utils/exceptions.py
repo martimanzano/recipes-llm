@@ -1,2 +1,0 @@
-class ContradictoryPreferenceError(Exception):
-    pass

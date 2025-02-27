@@ -1,8 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.models import IngredientPreference
-from app.pydantic_schema import IngredientPreferenceCreate, IngredientPreferenceUpdate
-from app.utils.exceptions import ContradictoryPreferenceError
+from app.models.models_ingredients import IngredientPreference
+from app.schemas.schema_ingredients import IngredientPreferenceCreate, IngredientPreferenceUpdate
 
 def get_ingredient(db: Session, user_id: int, ingredient_name: str):
     return (
@@ -27,6 +26,7 @@ def create_ingredient(db: Session, igredient_data: IngredientPreferenceCreate):
     db.add(new_preference)
     db.commit()
     db.refresh(new_preference)
+
     return new_preference
 
 def update_ingredient(db: Session, user_id: int, igredient_name: str, update_data: IngredientPreferenceUpdate):
@@ -40,6 +40,7 @@ def update_ingredient(db: Session, user_id: int, igredient_name: str, update_dat
     preference.preference = update_data.preference
     db.commit()
     db.refresh(preference)
+
     return preference
 
 def delete_ingredient(db: Session, user_id: int, igredient_name: str):
@@ -52,6 +53,7 @@ def delete_ingredient(db: Session, user_id: int, igredient_name: str):
 
     db.delete(preference)
     db.commit()
+    
     return preference
 
 def list_ingredients(db: Session, user_id: int, skip: int = 0, limit: int = 100):

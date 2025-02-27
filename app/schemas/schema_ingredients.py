@@ -15,15 +15,15 @@ class IngredientPreferenceBase(BaseModel):
 class IngredientPreferenceCreate(IngredientPreferenceBase):
     pass
 
-# Model for update requests
+# Model for update requests (the ingredient name is in the endpoint itself we don't need it here)
 class IngredientPreferenceUpdate(BaseModel):
     preference: PreferenceEnum
 
-# Model for responses (note: orm_mode=True for SQLAlchemy models)
+# Model for responses
 class IngredientPreferenceOut(IngredientPreferenceBase):
     id: int
 
     model_config = {
-        "from_attributes": True,  # for Pydantic v2 compatibility with ORM objects
+        "from_attributes": True,  # for Pydantic v2 compatibility
         # "orm_mode": True
     }

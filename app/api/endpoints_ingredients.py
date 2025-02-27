@@ -1,19 +1,13 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from app import ingredient_preferences_crud as crud, pydantic_schema as schemas
-from app.database import SessionLocal
+from app.schemas import schema_ingredients as schemas
+from app.crud import ingredient_preferences_crud as crud
+from app.database.database import get_db
 
 router = APIRouter()
 logger = logging.getLogger("ingredient_preference")
 logger.setLevel(logging.INFO)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=schemas.IngredientPreferenceOut, status_code=status.HTTP_201_CREATED)
 def create_ingredient_preference(

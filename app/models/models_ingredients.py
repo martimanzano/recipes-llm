@@ -17,5 +17,5 @@ class IngredientPreference(Base):
     preference = Column(Enum(PreferenceEnum), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint("user_id", "ingredient", name="uix_user_ingredient"),
+        UniqueConstraint("user_id", "ingredient", name="uix_user_ingredient"), # Unique combination of user-ingredient preference constraint
     )

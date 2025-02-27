@@ -1,18 +1,6 @@
 =======
-recipes
+Recipes-LLM
 =======
-
-
-.. image:: https://img.shields.io/pypi/v/recipes.svg
-        :target: https://pypi.python.org/pypi/recipes
-
-.. image:: https://img.shields.io/travis/marti.manzano/recipes.svg
-        :target: https://travis-ci.com/marti.manzano/recipes
-
-.. image:: https://readthedocs.org/projects/recipes/badge/?version=latest
-        :target: https://recipes.readthedocs.io/en/latest/?version=latest
-        :alt: Documentation Status
-
 
 
 
