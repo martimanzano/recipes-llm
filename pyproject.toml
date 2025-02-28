@@ -1,63 +1,32 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "recipes"
 version = "0.1.0"
 description = "Recipes let's you create delicious recipes based on user's preferences. Yummy!"
-readme = "README.rst"
+readme = "README.md"
 authors = [
   {name = "Marti Manzano", email = "marti.manzano@outlook.com"}
 ]
 maintainers = [
   {name = "Marti Manzano", email = "marti.manzano@outlook.com"}
 ]
-classifiers = [
 
-]
 license = {text = "MIT license"}
 dependencies = [
-  
+  'fastapi[standard]==0.115.8',
+  'SQLAlchemy==2.0.38',
+  'psycopg2-binary==2.9.10',
+  'openai==1.64.0',
+  'backoff==2.2.1',
+  'pydantic==2.10.6'
 ]
 
 [project.optional-dependencies]
 dev = [
-    "coverage",  # testing
-    "mypy",  # linting
     "pytest",  # testing
-    "ruff"  # linting
 ]
 
 [project.urls]
 
-bugs = "https://github.com/marti.manzano/recipes/issues"
-changelog = "https://github.com/marti.manzano/recipes/blob/master/changelog.md"
-homepage = "https://github.com/marti.manzano/recipes"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.package-data]
-"*" = ["*.*"]
-
-
-
-
-# Mypy
-# ----
-
-[tool.mypy]
-files = "."
-
-# Use strict defaults
-strict = true
-warn_unreachable = true
-warn_no_return = true
-
-[[tool.mypy.overrides]]
-# Don't require test functions to include types
-module = "tests.*"
-allow_untyped_defs = true
-disable_error_code = "attr-defined"
-
+bugs = "https://github.com/marti.manzano/recipes-llm/issues"
+changelog = "https://github.com/marti.manzano/recipes-llm/blob/master/changelog.md"
+homepage = "https://github.com/marti.manzano/recipes-llm"

@@ -1,18 +1,15 @@
 # tests/test_api.py
-import uuid
 from fastapi.testclient import TestClient
 from app.main import app
 from app.schemas.schema_recipes import RecipeList
 
 client = TestClient(app)
 
-def unique_ingredient(base: str) -> str:
-    """Generate a unique ingredient name to avoid collisions between tests."""
-    return base#f"{base}-{uuid.uuid4().hex[:6]}"
+
 
 def test_create_ingredient_preference():
     user_id = 1
-    ingredient = unique_ingredient("tomato")
+    ingredient = "tomato"
     payload = {"user_id": user_id, "ingredient": ingredient, "preference": "liked"}
     response = client.post("/ingredients/", json=payload)
     assert response.status_code == 201, response.text
@@ -23,7 +20,7 @@ def test_create_ingredient_preference():
 
 def test_create_duplicate_with_same_preference():
     user_id = 2
-    ingredient = unique_ingredient("tomato")
+    ingredient = "tomato"
     payload = {"user_id": user_id, "ingredient": ingredient, "preference": "liked"}
     # First creation should succeed.
     response1 = client.post("/ingredients/", json=payload)
@@ -36,7 +33,7 @@ def test_create_duplicate_with_same_preference():
 
 def test_create_contradictory_preference():
     user_id = 3
-    ingredient = unique_ingredient("lettuce")
+    ingredient = "lettuce"
     payload1 = {"user_id": user_id, "ingredient": ingredient, "preference": "liked"}
     payload2 = {"user_id": user_id, "ingredient": ingredient, "preference": "disliked"}
     response1 = client.post("/ingredients/", json=payload1)
@@ -47,7 +44,7 @@ def test_create_contradictory_preference():
 
 def test_read_ingredient():
     user_id = 4
-    ingredient = unique_ingredient("cucumber")
+    ingredient = "cucumber"
     payload = {"user_id": user_id, "ingredient": ingredient, "preference": "liked"}
     client.post("/ingredients/", json=payload)
     response = client.get(f"/ingredients/{ingredient}", params={"user_id": user_id})
@@ -58,7 +55,7 @@ def test_read_ingredient():
 
 def test_update_ingredient():
     user_id = 5
-    ingredient = unique_ingredient("onion")
+    ingredient = "onion"
     payload = {"user_id": user_id, "ingredient": ingredient, "preference": "liked"}
     client.post("/ingredients/", json=payload)
     update_payload = {"preference": "disliked"}
@@ -69,7 +66,7 @@ def test_update_ingredient():
 
 def test_delete_ingredient():
     user_id = 6
-    ingredient = unique_ingredient("garlic")
+    ingredient = "garlic"
     payload = {"user_id": user_id, "ingredient": ingredient, "preference": "liked"}
     client.post("/ingredients/", json=payload)
     response = client.delete(f"/ingredients/{ingredient}", params={"user_id": user_id})
@@ -82,9 +79,9 @@ def test_list_ingredients():
     user_id = 7
     # Create several ingredients for the same user.
     ingredients = [
-        {"user_id": user_id, "ingredient": unique_ingredient("salt"), "preference": "liked"},
-        {"user_id": user_id, "ingredient": unique_ingredient("sugar"), "preference": "disliked"},
-        {"user_id": user_id, "ingredient": unique_ingredient("pepper"), "preference": "liked"},
+        {"user_id": user_id, "ingredient": "salt", "preference": "liked"},
+        {"user_id": user_id, "ingredient": "sugar", "preference": "disliked"},
+        {"user_id": user_id, "ingredient": "pepper", "preference": "liked"},
     ]
     for ing in ingredients:
         client.post("/ingredients/", json=ing)
@@ -102,9 +99,9 @@ def test_create_recipes_with_disliked_ingredients():
     ingredients = ["tomato", "cheese", "onion"]
     
     ingredients_preferences = [
-        {"user_id": user_id, "ingredient": unique_ingredient(ingredients[0]), "preference": "liked"},
-        {"user_id": user_id, "ingredient": unique_ingredient(ingredients[1]), "preference": "liked"},
-        {"user_id": user_id, "ingredient": unique_ingredient(ingredients[2]), "preference": "disliked"}
+        {"user_id": user_id, "ingredient": ingredients[0], "preference": "liked"},
+        {"user_id": user_id, "ingredient": ingredients[1], "preference": "liked"},
+        {"user_id": user_id, "ingredient": ingredients[2], "preference": "disliked"}
     ]
 
     client.post("/ingredients/", json=ingredients_preferences[0])

@@ -1,5 +1,4 @@
 # tests/test_crud.py
-import uuid
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -16,15 +15,11 @@ from app.crud.ingredient_preferences_crud import (
 from app.schemas.schema_ingredients import IngredientPreferenceCreate, IngredientPreferenceUpdate, PreferenceEnum
 from app.schemas.schema_recipes import RecipeList
 
-def unique_ingredient(base: str) -> str:
-    """Generate a unique ingredient name to avoid collisions between tests."""
-    return base#f"{base}-{uuid.uuid4().hex[:6]}"
-
 @pytest.fixture(scope="function")
 def db_session():
     """
     Returns a database session using the same production engine.
-    In production you might want to isolate tests using transactions.
+    In production another database should be used
     """
     session = SessionLocal()
     try:
@@ -36,7 +31,7 @@ def db_session():
 
 def test_create_ingredient_preference(db_session: Session):
     user_id = 1
-    ingredient = unique_ingredient("tomato")
+    ingredient = "tomato"
     create_payload = IngredientPreferenceCreate(
         user_id=user_id,
         ingredient=ingredient,
@@ -45,12 +40,12 @@ def test_create_ingredient_preference(db_session: Session):
     record = create_ingredient(db_session, create_payload)
     assert record.ingredient == ingredient
     assert record.user_id == user_id
-    # Depending on your SQLAlchemy enum setup, this may be an enum value.
+   
     assert record.preference.value == PreferenceEnum.liked
 
 def test_create_duplicate_with_same_preference(db_session: Session):
     user_id = 2
-    ingredient = unique_ingredient("tomato")
+    ingredient = "tomato"
     payload = IngredientPreferenceCreate(
         user_id=user_id,
         ingredient=ingredient,
@@ -64,7 +59,7 @@ def test_create_duplicate_with_same_preference(db_session: Session):
 
 def test_create_contradictory_preference(db_session: Session):
     user_id = 3
-    ingredient = unique_ingredient("lettuce")
+    ingredient = "lettuce"
     payload1 = IngredientPreferenceCreate(
         user_id=user_id,
         ingredient=ingredient,
@@ -84,7 +79,7 @@ def test_create_contradictory_preference(db_session: Session):
 
 def test_get_update_delete_ingredient(db_session: Session):
     user_id = 4
-    ingredient = unique_ingredient("cucumber")
+    ingredient = "cucumber"
     # Create record.
     create_payload = IngredientPreferenceCreate(
         user_id=user_id,
@@ -111,9 +106,9 @@ def test_get_update_delete_ingredient(db_session: Session):
 def test_list_ingredients(db_session: Session):
     user_id = 5
     ingredients_data = [
-        {"ingredient": unique_ingredient("salt"), "preference": PreferenceEnum.liked},
-        {"ingredient": unique_ingredient("sugar"), "preference": PreferenceEnum.disliked},
-        {"ingredient": unique_ingredient("pepper"), "preference": PreferenceEnum.liked},
+        {"ingredient": "salt", "preference": PreferenceEnum.liked},
+        {"ingredient": "sugar", "preference": PreferenceEnum.disliked},
+        {"ingredient": "pepper", "preference": PreferenceEnum.liked},
     ]
     # Create several ingredient preference records.
     for data in ingredients_data:

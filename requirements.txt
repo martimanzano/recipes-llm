@@ -1,5 +1,6 @@
-fastapi[standard]
-sqlalchemy
-psycopg2-binary
-openai
-backoff
+fastapi[standard]==0.115.8
+SQLAlchemy==2.0.38
+psycopg2-binary==2.9.10
+openai==1.64.0
+backoff==2.2.1
+pydantic==2.10.6

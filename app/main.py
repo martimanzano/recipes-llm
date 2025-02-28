@@ -40,10 +40,10 @@ async def catch_exceptions_middleware(request: Request, call_next):
     
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this to restrict allowed origins
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],  
+    allow_headers=["*"],
 )
 
 app.add_middleware(

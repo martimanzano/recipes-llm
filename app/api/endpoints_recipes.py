@@ -33,6 +33,7 @@ def create_recipes(
     # Add "no preference" for ingredients that were not found
     result = {ingredient: preference_map.get(ingredient, "no preference") for ingredient in ingredients}
   
+    # TODO: Add in-context learning to improve results
     llm = GenericLLM()
     formatted_prompt = llm.build_prompt(llm_prompts.RECIPES_GENERATION_SYS, None, llm_prompts.RECIPES_GENERATION_INST_STRUCTURED.format(preferences=result))
     structured_llm_response = llm.generate_structured_response(formatted_prompt, schemas_recipes.RecipeList, 0.6, 4096)
