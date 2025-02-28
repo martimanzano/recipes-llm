@@ -1,8 +1,4 @@
-=======
-Recipes-LLM
-=======
-
-
+# Recipes-LLM
 
 Recipes-LLM let's you create delicious recipes based on user's preferences. Yummy!
 
@@ -32,6 +28,7 @@ The **Recipes-LLM** is a **FastAPI-based backend** that allows users to manage t
 
 ## 📦 Project Structure
 
+```
 recipe
 │── app/
 │   ├── api/
@@ -61,7 +58,7 @@ recipe
 │── pyproject.toml                                      # Python package metadata
 │── README.md                                           # Project documentation
 │── LICENSE.md                                          # Project license
-
+```
 ---
 
 ## 🛠️ Setup Instructions  
