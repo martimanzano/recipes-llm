@@ -1,7 +1,8 @@
 import logging
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.database.database import get_db
 from pydantic import BaseModel
 from app.utils.llm import GenericLLM
@@ -15,16 +16,17 @@ logger = logging.getLogger("recipes")
 logger.setLevel(logging.INFO)
 
 @router.get("/", response_model=schemas_recipes.RecipeList)
-def create_recipes(
+async def create_recipes(
     user_id: int = Query(..., gt=0), 
     ingredients: List[str] = Query(..., min_length=3), 
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
-    preferences = (
-        db.query(IngredientPreference)
-        .filter(IngredientPreference.user_id == user_id, IngredientPreference.ingredient.in_(ingredients))
-        .all()
+    preferences_select = select(IngredientPreference).filter(
+        IngredientPreference.user_id == user_id,
+        IngredientPreference.ingredient.in_(ingredients)
     )
+    result = await db.execute(preferences_select)
+    preferences = result.scalars().all()
     # Create a mapping of ingredient -> preference
     preference_map = {p.ingredient: p.preference.value for p in preferences}
     if PreferenceEnum.disliked in preference_map.values():
@@ -44,4 +46,5 @@ def create_recipes(
         raise HTTPException(status_code=400, detail="No recipes found for the given ingredients. Please try again with different ingredients.")
     
     logger.info(f"Recipes generated for user {user_id} with ingredients {ingredients}")
+
     return recipe_list_obj

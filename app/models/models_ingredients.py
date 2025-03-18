@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, Enum, UniqueConstraint
-from sqlalchemy.ext.declarative import declarative_base
+from app.database.database import Base
 import enum
-
-Base = declarative_base()
 
 class PreferenceEnum(str, enum.Enum):
     liked = "liked"

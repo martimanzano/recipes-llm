@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import logging
 import traceback
 from fastapi import FastAPI, HTTPException, Request
@@ -6,18 +7,24 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from app.api import endpoints_ingredients, endpoints_recipes, endpoints_admin
-from app.database.database import engine
-from app.models.models_ingredients import Base
+from app.database.database import async_engine, Base
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)
 
-# Create database tables if needed
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create database tables if needed
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # Close async engine
+    await async_engine.dispose()
 
 app = FastAPI(title="Recipe Service", 
               description="A backend service for managing ingredient preferences and creating delicious recipes.",
-              version="1.0.0")
+              version="1.0.0",
+              lifespan=lifespan)
 
 @app.middleware("http")
 async def catch_exceptions_middleware(request: Request, call_next):
@@ -47,7 +54,7 @@ app.add_middleware(
 )
 
 app.add_middleware(
-    TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"]
+    TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver", "test"]
 )
 
 # Include the routers from the endpoints

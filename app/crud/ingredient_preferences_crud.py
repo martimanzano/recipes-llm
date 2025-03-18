@@ -1,18 +1,21 @@
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.models.models_ingredients import IngredientPreference
 from app.schemas.schema_ingredients import IngredientPreferenceCreate, IngredientPreferenceUpdate
 
-def get_ingredient(db: Session, user_id: int, ingredient_name: str):
-    return (
-        db.query(IngredientPreference)
-        .filter(IngredientPreference.user_id == user_id)
-        .filter(IngredientPreference.ingredient == ingredient_name)
-        .first()
+async def get_ingredient(db: AsyncSession, user_id: int, ingredient_name: str):
+    slct_ret = select(IngredientPreference).filter(
+        IngredientPreference.user_id == user_id,
+        IngredientPreference.ingredient == ingredient_name
     )
+    result = await db.execute(slct_ret)
+    preference = result.scalar_one_or_none()
+    
+    return preference
 
-def create_ingredient(db: Session, igredient_data: IngredientPreferenceCreate):
-    existing_preference = get_ingredient(db, igredient_data.user_id, igredient_data.ingredient)
+async def create_ingredient(db: AsyncSession, igredient_data: IngredientPreferenceCreate):
+    existing_preference = await get_ingredient(db, igredient_data.user_id, igredient_data.ingredient)
     if existing_preference:
         if existing_preference.preference != igredient_data.preference:
             raise HTTPException(status_code=400, detail="Contradictory preference detected.")
@@ -24,13 +27,13 @@ def create_ingredient(db: Session, igredient_data: IngredientPreferenceCreate):
         preference=igredient_data.preference        
     )
     db.add(new_preference)
-    db.commit()
-    db.refresh(new_preference)
+    await db.commit()
+    await db.refresh(new_preference)
 
     return new_preference
 
-def update_ingredient(db: Session, user_id: int, igredient_name: str, update_data: IngredientPreferenceUpdate):
-    preference = get_ingredient(db, user_id, igredient_name)
+async def update_ingredient(db: AsyncSession, user_id: int, igredient_name: str, update_data: IngredientPreferenceUpdate):
+    preference = await get_ingredient(db, user_id, igredient_name)
     if not preference:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -38,25 +41,33 @@ def update_ingredient(db: Session, user_id: int, igredient_name: str, update_dat
         )
 
     preference.preference = update_data.preference
-    db.commit()
-    db.refresh(preference)
+    await db.commit()
+    await db.refresh(preference)
 
     return preference
 
-def delete_ingredient(db: Session, user_id: int, igredient_name: str):
-    preference = get_ingredient(db, user_id, igredient_name)
-    if not preference:
+async def delete_ingredient(db: AsyncSession, user_id: int, igredient_name: str):
+    slct_ret = select(IngredientPreference).filter(
+        IngredientPreference.user_id == user_id,
+        IngredientPreference.ingredient == igredient_name
+    )
+    result = await db.execute(slct_ret)
+    preference = result.scalar_one_or_none()
+    if preference:
+        await db.delete(preference)
+        await db.commit()
+        
+        return preference
+    else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Ingredient not found for the given user."
         )
 
-    db.delete(preference)
-    db.commit()
-    
-    return preference
-
-def list_ingredients(db: Session, user_id: int, skip: int = 0, limit: int = 100):
-    return db.query(IngredientPreference).filter(
+async def list_ingredients(db: AsyncSession, user_id: int, skip: int = 0, limit: int = 100):
+    slct_ret = select(IngredientPreference).filter(
         IngredientPreference.user_id == user_id
-    ).offset(skip).limit(limit).all()
+    ).offset(skip).limit(limit)
+    result = await db.execute(slct_ret)
+
+    return result.scalars().all()

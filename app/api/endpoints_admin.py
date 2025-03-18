@@ -1,6 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from dotenv import load_dotenv
 import os
 from app.database.database import get_db
@@ -10,7 +11,7 @@ router = APIRouter()
 logger = logging.getLogger("admin")
 
 @router.delete("/clean-database", status_code=200)
-def clean_database(secret_key: str, db: Session = Depends(get_db)):
+async def clean_database(secret_key: str, db: AsyncSession = Depends(get_db)):
     """
     Deletes all data from the database (for testing purposes).
     Requires a secret key for security.
@@ -22,8 +23,11 @@ def clean_database(secret_key: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Invalid secret key")
 
     # Delete all records in the table
-    ret = db.query(IngredientPreference).delete()
-    db.commit()
+    slct_ret = select(IngredientPreference)
+    ret = await db.execute(slct_ret)
+    for record in ret.scalars():
+        db.delete(record)
+    await db.commit()
 
     message = "Database cleaned successfully. Deleted records: " + str(ret)
     logger.info(message)
