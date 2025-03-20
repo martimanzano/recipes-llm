@@ -6,7 +6,7 @@ Recipes-LLM let's you create delicious recipes based on user's preferences. Yumm
 The **Recipes-LLM** is a **FastAPI-based backend** that allows users to manage their **ingredient preferences** and generate **personalized recipes**.
 
 ### ✨ Features
-✅ **Async!**
+✅ **Async!**  
 ✅ **Ingredient Preferences Management** (CRUD operations for user preferences)  
 ✅ **Automatic Recipes Generation** (Leverages LLMs to generate recipes based on available ingredients and user preferences)  
 ✅ **Database Cleanup Endpoint** (For testing purposes)  
@@ -117,6 +117,9 @@ pyest tests/
 ```
 __IMPORTANT NOTE: IN THIS DEVELOPMENT ENVIRONMENT TESTS WILL USE THE SAME DATABASE_URL CONFIGURED IN THE PROJECT TO EASE TESTING AND DATABASE POPULATING. IN PRODUCTION ENVIRONMENTS A SEPARATE DATABASE SHOULD BE USED.__
 
+---
+## Key Design Decisions  
+
 ### **Separation of Concerns**
 - The project follows a **modular structure** separating database models, business logic, API routes, and schemas.  
 - **api/** manages endpoints individually.  
@@ -125,10 +128,6 @@ __IMPORTANT NOTE: IN THIS DEVELOPMENT ENVIRONMENT TESTS WILL USE THE SAME DATABA
 - **models/** contains database structures.  
 - **schemas** defines data validation using **Pydantic**.  
 - **utils/** contains utility classes/variables/functions. For now only for LLM interaction.
-
-
----
-## Key Design Decisions  
 
 ### **Ingredient Preferences Model & Validation**  
 - Each **ingredient preference** is uniquely identified by `user_id` and `ingredient`.  
