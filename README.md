@@ -6,6 +6,7 @@ Recipes-LLM let's you create delicious recipes based on user's preferences. Yumm
 The **Recipes-LLM** is a **FastAPI-based backend** that allows users to manage their **ingredient preferences** and generate **personalized recipes**.
 
 ### ✨ Features
+✅ **Async!**
 ✅ **Ingredient Preferences Management** (CRUD operations for user preferences)  
 ✅ **Automatic Recipes Generation** (Leverages LLMs to generate recipes based on available ingredients and user preferences)  
 ✅ **Database Cleanup Endpoint** (For testing purposes)  
@@ -116,6 +117,41 @@ pyest tests/
 ```
 __IMPORTANT NOTE: IN THIS DEVELOPMENT ENVIRONMENT TESTS WILL USE THE SAME DATABASE_URL CONFIGURED IN THE PROJECT TO EASE TESTING AND DATABASE POPULATING. IN PRODUCTION ENVIRONMENTS A SEPARATE DATABASE SHOULD BE USED.__
 
+### **Separation of Concerns**
+- The project follows a **modular structure** separating database models, business logic, API routes, and schemas.  
+- **api/** manages endpoints individually.  
+- **crud/** handles database operations separately.  
+- **database/** contains database interaction.
+- **models/** contains database structures.  
+- **schemas** defines data validation using **Pydantic**.  
+- **utils/** contains utility classes/variables/functions. For now only for LLM interaction.
+
+
+---
+## Key Design Decisions  
+
+### **Ingredient Preferences Model & Validation**  
+- Each **ingredient preference** is uniquely identified by `user_id` and `ingredient`.  
+- **Constraints prevent contradictions** (e.g., the same ingredient cannot be both "liked" and "disliked").  
+- **Enum (`PreferenceEnum`)** ensures only valid preference values are accepted. 
+- Prevention of contradictory preferences storing (they need to be setted using the UPDATE method). 
+
+### **Recipes Generation**  
+- The recipes generation endpoint takes a list of desired ingredients (enforcing that 3 or more ingredients are passed) and matches each one with the user's preferences. If any of them is disliked, an exception is raised. For the
+others, their preference (liked or no preference) is retrieved.
+- The preferences-matching is used in a LLM prompt that instructs the model to generate up to 5 recipes taking into account the user's preferences. If no recipes can be generated, the model
+is instructed to return an empty list.
+- The LLM prompt uses a specific response format define with Pydantic, and the response is also validated before being returned.
+- Tested with `Google Gemini 2.0-flash-001`.
+
+### **Admin Cleanup Endpoint**  
+- A `/admin/clean-database/` endpoint was added to **reset the database** during testing.  
+- Protected by a **secret key** to prevent unauthorized deletions.
+
+### **Others**  
+- Logging
+- Exception handling
+- Function and endpoint testing
 
 Credits
 -------
